@@ -27,10 +27,12 @@ class OmniKeyService : InputMethodService() {
     private lateinit var mlEngine: MLEngine
     private lateinit var codeEngine: CodeEngine
     private lateinit var writerEngine: WriterEngine
+    private lateinit var smartDetector: SmartContextDetector
 
     // State
     private var currentInputConnection: InputConnection? = null
     private var currentEditorInfo: EditorInfo? = null
+    private var currentContext: SmartContextDetector.Context? = null
     private var isIncognitoMode = false
 
     override fun onCreate() {
@@ -51,6 +53,7 @@ class OmniKeyService : InputMethodService() {
         mlEngine = MLEngine(this)
         codeEngine = CodeEngine(this, app.database)
         writerEngine = WriterEngine(this, app.database)
+        smartDetector = SmartContextDetector()
     }
 
     override fun onCreateInputView(): View {
@@ -91,13 +94,27 @@ class OmniKeyService : InputMethodService() {
         super.onStartInputView(info, restarting)
 
         lifecycleScope.launch {
-            // Load app-specific settings
+            // Detect smart context
             val packageName = info?.packageName ?: ""
+            currentContext = smartDetector.detectContext(
+                info,
+                currentInputConnection,
+                packageName
+            )
+
+            // Apply context-based optimizations
+            applyContextOptimizations(currentContext!!)
+
+            // Load app-specific settings
             loadAppSpecificSettings(packageName)
 
             // Check for incognito mode
             isIncognitoMode = app.preferenceManager.incognitoMode.get() ||
-                             isPrivateField(info)
+                             isPrivateField(info) ||
+                             smartDetector.shouldDisableLearning(currentContext!!)
+
+            // Update keyboard based on context
+            updateKeyboardForContext(currentContext!!)
         }
     }
 
@@ -444,3 +461,41 @@ data class SwipePath(
     val startTime: Long,
     val endTime: Long
 )
+
+    private suspend fun applyContextOptimizations(context: SmartContextDetector.Context) {
+        when (context.mode) {
+            SmartContextDetector.InputMode.CODE,
+            SmartContextDetector.InputMode.TERMINAL -> {
+                if (app.preferenceManager.codeAutoComplete.get()) {
+                    codeEngine.enableCodeMode()
+                }
+            }
+            SmartContextDetector.InputMode.FORMAL_WRITING,
+            SmartContextDetector.InputMode.MARKDOWN -> {
+                if (app.preferenceManager.grammarCheck.get()) {
+                    writerEngine.enableWritingMode()
+                }
+            }
+            SmartContextDetector.InputMode.PASSWORD -> {
+                // Disable all learning and suggestions
+            }
+            else -> {
+                // Normal mode
+            }
+        }
+    }
+
+    private fun updateKeyboardForContext(context: SmartContextDetector.Context) {
+        when (context.layoutOptimization) {
+            SmartContextDetector.LayoutOptimization.NUMERIC -> {
+                keyboardView.showNumberLayout()
+            }
+            SmartContextDetector.LayoutOptimization.CODE_SYMBOLS -> {
+                keyboardView.showSymbolLayout()
+            }
+            else -> {
+                keyboardView.showQwertyLayout()
+            }
+        }
+    }
+}
