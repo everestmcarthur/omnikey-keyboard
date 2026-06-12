@@ -9,7 +9,9 @@
       "Bash(git rm *)",
       "Bash(git push *)",
       "Bash(git remote *)",
-      "Bash(git restore *)"
+      "Bash(git restore *)",
+      "Bash(gh run *)",
+      "Bash(curl *)"
     ]
   }
 }
