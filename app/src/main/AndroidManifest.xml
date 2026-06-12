@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Permissions -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application
+        android:name=".OmniKeyApplication"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.OmniKey"
+        tools:targetApi="31">
+
+        <!-- Main Settings Activity -->
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.OmniKey">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Keyboard Service -->
+        <service
+            android:name=".service.OmniKeyService"
+            android:exported="true"
+            android:label="@string/keyboard_name"
+            android:permission="android.permission.BIND_INPUT_METHOD">
+            <intent-filter>
+                <action android:name="android.view.InputMethod" />
+            </intent-filter>
+            <meta-data
+                android:name="android.view.im"
+                android:resource="@xml/input_method" />
+        </service>
+
+        <!-- Theme Settings Activity -->
+        <activity
+            android:name=".ui.theme.ThemeEditorActivity"
+            android:exported="false"
+            android:label="@string/theme_editor"
+            android:theme="@style/Theme.OmniKey" />
+
+        <!-- Advanced Settings Activity -->
+        <activity
+            android:name=".ui.settings.AdvancedSettingsActivity"
+            android:exported="false"
+            android:label="@string/advanced_settings"
+            android:theme="@style/Theme.OmniKey" />
+
+        <!-- Text Replacement Activity -->
+        <activity
+            android:name=".ui.textreplace.TextReplacementActivity"
+            android:exported="false"
+            android:label="@string/text_replacement"
+            android:theme="@style/Theme.OmniKey" />
+
+        <!-- Clipboard Manager Activity -->
+        <activity
+            android:name=".ui.clipboard.ClipboardActivity"
+            android:exported="false"
+            android:label="@string/clipboard_manager"
+            android:theme="@style/Theme.OmniKey" />
+
+        <!-- Gesture Settings Activity -->
+        <activity
+            android:name=".ui.gestures.GestureSettingsActivity"
+            android:exported="false"
+            android:label="@string/gesture_settings"
+            android:theme="@style/Theme.OmniKey" />
+
+    </application>
+
+</manifest>
